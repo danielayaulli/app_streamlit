@@ -1,21 +1,24 @@
-# 1. Crear organización y repositorio público en github
-Ejemplo: https://github.com/juantovarg-ops/app-docker-st
-# 2. Crear aplicación y/o programa en python
-Ejemplo: https://github.com/juantovarg-ops/app-docker-st/blob/main/app.py
-# 3. Crear requirements.txt
-Ejemplo: https://github.com/juantovarg-ops/app-docker-st/blob/main/requirements.txt
-# 4. Crear Dockerfile
-Ejemplo: https://github.com/juantovarg-ops/app-docker-st/blob/main/Dockerfile
-# 5. Clonar repositorio
-git clone https://github.com/juantovarg-ops/app-docker-st.git
-# 6. Cambiar de directorio
-cd app-docker-st
-# 7. Construir la imagen
-docker build -t st-app .
-# 8. Ejecutar el contenedor
-docker run -d -p 8501:8501 --name mi-st-app st-app
-# 9. Verificar que está corriendo
-docker ps
-# 10. Ver logs (opcional)
-docker logs mi-st-app
-#11. Acceder en el navegador: “OPEN PORT” ingresar 8501
+# Usar imagen base de Python
+FROM python:3.11-slim
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar requirements primero (para optimizar cache)
+COPY requirements.txt .
+
+# Instalar dependencias
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar el código de la aplicación
+COPY app.py .
+
+# Exponer puerto 8501 (puerto por defecto de Streamlit)
+EXPOSE 8501
+
+# Configurar Streamlit para producción
+ENV STREAMLIT_SERVER_PORT=8501
+ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+
+# Comando para ejecutar la aplicación
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
